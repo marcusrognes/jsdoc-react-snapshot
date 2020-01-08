@@ -13,8 +13,8 @@ const chalk = require('chalk');
 const jsdoc = require('jsdoc-api');
 const fs = require('fs');
 const glob = require('glob');
-const testRunnerCode = fs
-	.readFileSync(__dirname + '/lib/testRunner.js')
+const snapshotRunner = fs
+	.readFileSync(__dirname + '/lib/snapshotRunner.js')
 	.toString();
 const program = require('commander');
 
@@ -37,6 +37,12 @@ function customPrintTest(test) {
 	console.log('');
 }
 
+function sleep(ms) {
+	return new Promise(resolve => {
+		setTimeout(resolve, ms);
+	});
+}
+
 glob(
 	program.files,
 	{ ignore: '**/node_modules/**/*' },
@@ -55,19 +61,20 @@ glob(
 			};
 		});
 
-		const tests = [];
+		const snapshots = [];
 
 		// Get all tests within the documentation
 		fileData.forEach(file => {
 			file.jsdoc.forEach(comment => {
 				comment.tags &&
 					comment.tags.forEach(tag => {
-						if (tag.title != 'test') {
+						if (tag.title != 'snapshot') {
 							return;
 						}
 
 						let testCode = tag.value.trim();
 						let describe = '';
+						let options = {};
 
 						if (testCode.charAt(0) === '"') {
 							const match = testCode.match(/\"(.*?)\"/);
@@ -75,10 +82,17 @@ glob(
 							describe = match[1];
 						}
 
-						tests.push({
+						if (testCode.charAt(0) === '{') {
+							const match = testCode.match(/\{(.*?)\}/);
+							testCode = testCode.replace(match[0], '').trim();
+							options = JSON.parse(match[0]);
+						}
+
+						snapshots.push({
 							name: comment.name,
 							type: comment.kind,
 							describe,
+							options,
 							file: file.file,
 							testCode,
 							fileData: file.fileData,
@@ -87,29 +101,36 @@ glob(
 			});
 		});
 
-		console.log(`Found ${tests.length} tests`);
+		console.log(`Found ${snapshots.length} snapshots to snap`);
 		let success = 0;
 		let failed = 0;
 		let printedHeaders = [];
 
 		// Run all tests and wait for results
 		await Promise.all(
-			tests.map(async test => {
-				const header = `${test.type}: ${test.name} in ${test.file}`;
+			snapshots.map(async snapshot => {
+				const header = `${snapshot.type}: ${snapshot.name} in ${snapshot.file}`;
 				if (printedHeaders.indexOf(header) === -1) {
 					console.log(chalk.green(header));
 					printedHeaders.push(header);
 				}
 
-				console.log(`${test.describe || 'Running'}:`);
+				console.log(`${snapshot.describe || 'Running'}:`);
 
-				customPrintTest(`${test.testCode}`);
+				customPrintTest(`${snapshot.testCode}`);
 
 				try {
-					let code = `${testRunnerCode}
-${test.fileData}
+					let code = `
+${snapshot.fileData}
 
-${test.testCode}
+${snapshotRunner.replace("'{{CODE}}';", snapshot.testCode).replace(
+	"'{{OPTIONS}}'",
+	JSON.stringify({
+		name: snapshot.name,
+		describe: snapshot.describe,
+		...snapshot.options,
+	}),
+)}
 `;
 					let transpiledCode = '';
 
@@ -121,6 +142,9 @@ ${test.testCode}
 									{
 										babelrc: !!babelConfigFile,
 										filename: babelConfigFile,
+										plugins: [
+											'@babel/plugin-transform-runtime',
+										],
 									},
 									(error, result) => {
 										if (error) {
@@ -134,11 +158,17 @@ ${test.testCode}
 						);
 					} catch (error) {
 						throw new Error(
-							`Failed to run test code: ${error.message}`,
+							`Failed to transform snapshot code: ${error.message}`,
 						);
 					}
 
+					var IS_EVAL_DONE = false;
+
 					eval(transpiledCode);
+
+					while (!IS_EVAL_DONE) {
+						await sleep(1000);
+					}
 
 					success++;
 				} catch (error) {
@@ -156,8 +186,10 @@ ${test.testCode}
 		);
 
 		if (success)
-			console.log(chalk.green(`Tests finished successfully: ${success}`));
-		if (failed) console.log(chalk.red(`Tests failed: ${failed}`));
+			console.log(
+				chalk.green(`Snapshots finished successfully: ${success}`),
+			);
+		if (failed) console.log(chalk.red(`Snapshots failed: ${failed}`));
 
 		process.exit();
 	},

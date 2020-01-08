@@ -1,16 +1,22 @@
-# Proof of concept
+import React from 'react';
+import styled from 'styled-components';
 
-Create png "snapshots" from react components based on jsdoc @snapshot tag
+const ToDoListWrapper = styled.div`
+	width: 100%;
+	background: white;
+	border: 1px solid gray;
+`;
 
-## Example run
+const ToDoListElement = styled.div`
+	width: 100%;
+	padding: 5px;
+	border-bottom: 1px solid gray;
+	box-sizing: border-box;
+	&:last-child {
+		border-bottom: none;
+	}
+`;
 
-```
-node index.js -f example/**/*.js
-```
-
-## Example test
-
-```js
 /**
  *
  * @param {{tasks:Array}} props
@@ -46,4 +52,3 @@ export function ToDoList(props) {
 		</ToDoListWrapper>
 	);
 }
-```

@@ -1,17 +1,16 @@
 {
-	"name": "jsdoc-test",
+	"name": "jsdoc-react-snapshot",
 	"version": "0.0.1",
-	"description": "Add runnable @test tag to jsdoc",
+	"description": "Add @snbapshot tag to jsdoc",
 	"main": "index.js",
 	"scripts": {
 		"test": "node index.js -f **/*.js",
 		"lint": "prettier --write \"**/*.{js,json,css,md}\""
 	},
 	"bin": {
-		"jsdoc-test": "./index.js"
+		"jsdoc-react-snapshot": "./index.js"
 	},
 	"keywords": [
-		"test",
 		"jsdoc",
 		"doc"
 	],
@@ -32,12 +31,17 @@
 		"@babel/core": "^7.7.7",
 		"@babel/plugin-transform-runtime": "^7.7.6",
 		"@babel/preset-env": "^7.7.7",
+		"@babel/preset-react": "^7.7.4",
 		"@babel/runtime": "^7.7.7",
 		"chalk": "^3.0.0",
 		"commander": "^4.0.1",
 		"glob": "^7.1.6",
 		"jsdoc-api": "^5.0.4",
-		"moment": "^2.24.0"
+		"moment": "^2.24.0",
+		"puppeteer": "^2.0.0",
+		"react": "^16.12.0",
+		"react-dom": "^16.12.0",
+		"styled-components": "^4.4.1"
 	},
 	"devDependencies": {
 		"prettier": "^1.19.1"
