@@ -50,6 +50,5 @@ export function ToDoList(props) {
 
 Results:
 
-[snapshot]: .snapshots/ToDoList.Empty.png "Empty Snapshot"
-[snapshot]: .snapshots/ToDoList.Tasks.png "Tasks Snapshot"
-
+![ToDoList.Empty](.snapshots/ToDoList.Empty.png)
+![Tasks Snapshot](.snapshots/ToDoList.Tasks.png)
