@@ -32,6 +32,9 @@ const ToDoListElement = styled.div`
  * 		}, {
  * 			checked: true,
  * 			text: 'Do nothing'
+ * 		}, {
+ * 			checked: false,
+ * 			text: 'Something'
  * 		}]}
  * />
  */

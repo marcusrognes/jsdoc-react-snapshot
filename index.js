@@ -167,7 +167,7 @@ ${snapshotRunner.replace("'{{CODE}}';", snapshot.testCode).replace(
 					eval(transpiledCode);
 
 					while (!IS_EVAL_DONE) {
-						await sleep(1000);
+						await sleep(300);
 					}
 
 					success++;
