@@ -26,6 +26,9 @@ node index.js -f example/**/*.js
  * 		}, {
  * 			checked: true,
  * 			text: 'Do nothing'
+ * 		}, {
+ * 			checked: false,
+ * 			text: 'Something'
  * 		}]}
  * />
  */
